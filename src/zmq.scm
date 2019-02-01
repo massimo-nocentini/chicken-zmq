@@ -15,6 +15,7 @@
  (define zmq_close (foreign-lambda int "zmq_close" c-pointer))
  (define zmq_ctx_destroy (foreign-lambda int "zmq_ctx_destroy" c-pointer))
  (define zmq_connect (foreign-lambda int "zmq_connect" c-pointer (const c-string)))
+ (define zmq_version (foreign-lambda void "zmq_version" (c-pointer int) (c-pointer int) (c-pointer int)))
 
  (define-foreign-variable ZMQ_REP_inner int "ZMQ_REP") 
  (define-foreign-variable ZMQ_REQ_inner int "ZMQ_REQ") 

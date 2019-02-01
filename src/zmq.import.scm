@@ -6,6 +6,7 @@
   (scheme#list)
   '((ZMQ_REQ . zmq#ZMQ_REQ)
     (ZMQ_REP . zmq#ZMQ_REP)
+    (zmq_version . zmq#zmq_version)
     (zmq_connect . zmq#zmq_connect)
     (zmq_ctx_destroy . zmq#zmq_ctx_destroy)
     (zmq_close . zmq#zmq_close)
