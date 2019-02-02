@@ -4,7 +4,7 @@
   'zhelpers
   'zhelpers
   (scheme#list)
-  '((s_send . zhelpers#s_send))
+  '((s_recv . zhelpers#s_recv) (s_send . zhelpers#s_send))
   (scheme#list)
   (scheme#list))
 

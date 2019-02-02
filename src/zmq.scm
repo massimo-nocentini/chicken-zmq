@@ -16,11 +16,18 @@
  (define zmq_ctx_destroy (foreign-lambda int "zmq_ctx_destroy" c-pointer))
  (define zmq_connect (foreign-lambda int "zmq_connect" c-pointer (const c-string)))
  (define zmq_version (foreign-lambda void "zmq_version" (c-pointer int) (c-pointer int) (c-pointer int)))
+ (define zmq_setsockopt (foreign-lambda int "zmq_setsockopt" c-pointer int (const c-pointer) size_t))
 
  (define-foreign-variable ZMQ_REP_inner int "ZMQ_REP") 
  (define-foreign-variable ZMQ_REQ_inner int "ZMQ_REQ") 
+ (define-foreign-variable ZMQ_PUB_inner int "ZMQ_PUB") 
+ (define-foreign-variable ZMQ_SUB_inner int "ZMQ_SUB") 
+ (define-foreign-variable ZMQ_SUBSCRIBE_inner int "ZMQ_SUBSCRIBE") 
 
  (define ZMQ_REP ZMQ_REP_inner) 
  (define ZMQ_REQ ZMQ_REQ_inner) 
+ (define ZMQ_PUB ZMQ_PUB_inner) 
+ (define ZMQ_SUB ZMQ_SUB_inner) 
+ (define ZMQ_SUBSCRIBE ZMQ_SUBSCRIBE_inner) 
 
 )
