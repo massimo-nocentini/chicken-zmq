@@ -41,6 +41,17 @@
       body ...
       (zmq_close socket))))))
 
+    (define-syntax zmq-poll
+     (syntax-rules (→)
+      ((zmq-poll ((item → body) ...))
+       (let ((items (list item ...))) 
+        (zmq_poll (location items) (length items) -1)
+        (when (bitwise-and (zmq_pollitem_t-revents item) ZMQ_POLLIN)
+         body) ...))
+      ((zmq-poll ((socket body ...) ...)) 
+       (zmq-poll 
+        (((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) → (begin body ...)) ...)))))
+
  (define-syntax ✓₀
   (syntax-rules ()
    ((✓₀ sexp) (assert (zero? sexp)))))
