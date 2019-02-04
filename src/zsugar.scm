@@ -18,22 +18,32 @@
 
  (define-syntax zmq-socket
   (syntax-rules (ZMQ_SUB)
+
+   ; implicit context when only one of it is required.
+   ((zmq-socket (socket ...) body ...) 
+    (zmq-context (ctx) 
+     (zmq-socket ctx (socket ...) body ...)))
+
+   ; base case, no more bindings to handle, just put the `body` in.
    ((zmq-socket ctx () body ...) (begin body ...))
-   ((zmq-socket ctx ((socket (ZMQ_SUB sub)) other ...) body ...)
+
+   ; special case for `SUB` socket, it enforces to `SUBSCRIBE` an `id`. 
+   ((zmq-socket ctx ((socket (ZMQ_SUB id)) other ...) body ...)
     (zmq-socket ctx ((socket ZMQ_SUB) other ...)
      (begin
-      (✓₀ (zmq_setsockopt socket ZMQ_SUBSCRIBE 
-           (location sub) (string-length sub)))
+      (✓₀ (zmq_setsockopt socket ZMQ_SUBSCRIBE (location id) (string-length id)))
       body ...)))
+
+   ; catch all case for any sockets; btw, it recurs to handle each socket type.
    ((zmq-socket ctx ((socket type) other ...) body ...) 
     (let ((socket (zmq_socket ctx type)))
-     (zmq-socket cts (other ...)
+     (zmq-socket ctx (other ...)
       body ...
       (zmq_close socket))))))
 
  (define-syntax ✓₀
   (syntax-rules ()
-   ((✓₀ sexp) (assert (equal? 0 sexp)))))
+   ((✓₀ sexp) (assert (zero? sexp)))))
 
  (define-syntax forever
   (syntax-rules ()

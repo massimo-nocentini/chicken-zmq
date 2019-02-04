@@ -12,7 +12,7 @@
      (lambda ()
       (display "Connecting to hello world server\n")
       (zmq-context (ctx)
-       (zmq-socket ctx (requester ZMQ_REQ)
+       (zmq-socket ctx ((requester ZMQ_REQ))
         (zmq_connect requester "tcp://localhost:5555")
         (for-each
          (lambda (i)

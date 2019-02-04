@@ -23,11 +23,15 @@
  (define-foreign-variable ZMQ_PUB_inner int "ZMQ_PUB") 
  (define-foreign-variable ZMQ_SUB_inner int "ZMQ_SUB") 
  (define-foreign-variable ZMQ_SUBSCRIBE_inner int "ZMQ_SUBSCRIBE") 
+ (define-foreign-variable ZMQ_PUSH_inner int "ZMQ_PUSH") 
+ (define-foreign-variable ZMQ_PULL_inner int "ZMQ_PULL") 
 
  (define ZMQ_REP ZMQ_REP_inner) 
  (define ZMQ_REQ ZMQ_REQ_inner) 
  (define ZMQ_PUB ZMQ_PUB_inner) 
  (define ZMQ_SUB ZMQ_SUB_inner) 
  (define ZMQ_SUBSCRIBE ZMQ_SUBSCRIBE_inner) 
+ (define ZMQ_PUSH ZMQ_PUSH_inner) 
+ (define ZMQ_PULL ZMQ_PULL_inner) 
 
 )

@@ -2,3 +2,4 @@
 *.so
 *.DS_Store
 *.swp
+*.import.scm

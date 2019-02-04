@@ -11,7 +11,7 @@
     (define start-server
      (lambda ()
       (zmq-context (ctx)
-       (zmq-socket ctx (responder ZMQ_REP)
+       (zmq-socket ctx ((responder ZMQ_REP))
         (assert (equal? 0 (zmq_bind responder "tcp://*:5555")))
         (forever
          (let* ((chunk-length 10)
