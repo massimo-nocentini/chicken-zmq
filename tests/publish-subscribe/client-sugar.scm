@@ -16,6 +16,7 @@
         (✓₀ (zmq_connect subscriber "tcp://localhost:5556"))
         (let* ((L (lambda (i)
                    (let ((str (s_recv subscriber)))
+                    ;(print (car (string-tokenize str))) ; necessary to understand subscription
                     (string->number (cadr (string-tokenize str))))))
                (measures 100)
                (total-temp (foldr + 0 (map L (iota measures))))

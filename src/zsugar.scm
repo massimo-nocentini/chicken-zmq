@@ -5,6 +5,7 @@
   (chicken base)
   (except (chicken foreign) location)
   (chicken syntax)
+  (chicken bitwise)
   (chicken process-context)
   (chicken memory))
  (import srfi-1 srfi-13)
@@ -20,14 +21,14 @@
   (syntax-rules (ZMQ_SUB)
 
    ; implicit context when only one of it is required.
-   ((zmq-socket (socket ...) body ...) 
-    (zmq-context (ctx) 
+   ((zmq-socket (socket ...) body ...)
+    (zmq-context (ctx)
      (zmq-socket ctx (socket ...) body ...)))
 
    ; base case, no more bindings to handle, just put the `body` in.
    ((zmq-socket ctx () body ...) (begin body ...))
 
-   ; special case for `SUB` socket, it enforces to `SUBSCRIBE` an `id`. 
+   ; special case for `SUB` socket, it enforces to `SUBSCRIBE` an `id`.
    ((zmq-socket ctx ((socket (ZMQ_SUB id)) other ...) body ...)
     (zmq-socket ctx ((socket ZMQ_SUB) other ...)
      (begin
@@ -35,7 +36,7 @@
       body ...)))
 
    ; catch all case for any sockets; btw, it recurs to handle each socket type.
-   ((zmq-socket ctx ((socket type) other ...) body ...) 
+   ((zmq-socket ctx ((socket type) other ...) body ...)
     (let ((socket (zmq_socket ctx type)))
      (zmq-socket ctx (other ...)
       body ...
@@ -44,12 +45,28 @@
     (define-syntax zmq-poll
      (syntax-rules (→)
       ((zmq-poll (item → body) ...)
-       (let ((items (list item ...))) 
+       (let ((items (list item ...)))
         (zmq_poll (location items) (length items) -1)
         (when (bitwise-and (zmq_pollitem_t-revents item) ZMQ_POLLIN) body) ...))
-      ((zmq-poll (socket body ...) ...) 
-       (zmq-poll 
-        ((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) → (begin body ...)) ...))))
+      ((zmq-poll (socket body ...) ...)
+       (zmq-poll
+        ((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) → (begin body ...)) ... ))))
+
+    (define-syntax zmq-message
+     (syntax-rules ()
+      ((zmq-message (msg ...) body ...)
+       (let ((msg (make-zmq_msg_t (make-string 64))) ...)
+       ;(let-location ((msg (struct "zmq_msg_t")) ...)
+        (zmq_msg_init (location msg)) ...
+        body ...
+        (zmq_msg_close (location msg)) ...))))
+
+    (define-syntax locations
+     (syntax-rules ()
+      ((locations (((obj type) &obj) ...) body ...)
+       (let-location ((obj type) ...)
+        (let ((&obj (location obj)) ...)
+         body ...)))))
 
  (define-syntax ✓₀
   (syntax-rules ()
@@ -63,5 +80,6 @@
                                           (loop)))))
    ((forever body ...) (forever (_) body ...))))
 
+ (define NULL (foreign-value "NULL" c-pointer))
 
  )
