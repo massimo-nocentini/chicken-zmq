@@ -4,7 +4,7 @@ hello-world-client-server-test:
 	csc worker.scm 
 	csc client.scm
 	csc broker.scm
-	csc broker-with-proxy.scm
+	csc broker-buggy.scm
 
 
 

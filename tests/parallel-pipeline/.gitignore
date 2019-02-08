@@ -2,3 +2,5 @@
 ventilator
 worker
 sink
+sink-with-signaling
+worker-with-signaling

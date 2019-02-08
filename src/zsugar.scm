@@ -13,9 +13,11 @@
 
  (define-syntax zmq-context
   (syntax-rules ()
-   ((zmq-context (ctx ...) body ...) (let ((ctx (zmq_ctx_new)) ...)
-                                      body ...
-                                      (zmq_ctx_destroy ctx) ...))))
+   ((zmq-context (ctx ...) body ...) 
+    (let ((ctx (zmq_ctx_new)) ...)
+     (✓ ctx) ...
+     body ...
+     (zmq_ctx_destroy ctx) ...))))
 
  (define-syntax zmq-socket
   (syntax-rules (ZMQ_SUB)
@@ -38,25 +40,29 @@
    ; catch all case for any sockets; btw, it recurs to handle each socket type.
    ((zmq-socket ctx ((socket type) other ...) body ...)
     (let ((socket (zmq_socket ctx type)))
+     (✓ socket)
      (zmq-socket ctx (other ...)
       body ...
       (zmq_close socket))))))
 
     (define-syntax zmq-poll
      (syntax-rules (→)
-      ((zmq-poll (item → body) ...)
+      ((zmq-poll → (item body) ...)
        (let ((items (list item ...)))
         (zmq_poll (location items) (length items) -1)
-        (when (bitwise-and (zmq_pollitem_t-revents item) ZMQ_POLLIN) body) ...))
+        (when (equal? ZMQ_POLLIN (bitwise-and 
+                                  (zmq_pollitem_t-revents item) 
+                                  ZMQ_POLLIN)) 
+         (print item)
+         body) ...))
       ((zmq-poll (socket body ...) ...)
-       (zmq-poll
-        ((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) → (begin body ...)) ... ))))
+       (zmq-poll → 
+        ((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) (begin body ...)) ... ))))
 
     (define-syntax zmq-message
      (syntax-rules ()
       ((zmq-message (msg ...) body ...)
        (let ((msg (make-zmq_msg_t (make-string 64))) ...)
-       ;(let-location ((msg (struct "zmq_msg_t")) ...)
         (zmq_msg_init (location msg)) ...
         body ...
         (zmq_msg_close (location msg)) ...))))
@@ -71,6 +77,18 @@
  (define-syntax ✓₀
   (syntax-rules ()
    ((✓₀ sexp) (assert (zero? sexp)))))
+
+ (define-syntax ✓
+  (syntax-rules ()
+   ((✓ sexp) (assert (not (equal? sexp NULL))))))
+
+    (define-syntax ✗₋₁
+     (syntax-rules ()
+      ((✗₋₁ sexp recv) 
+       (let ((rc sexp))
+        (cond
+         ((equal? rc -1) (recv (zmq_errno)))
+         (else (✓₀ rc))))))) 
 
  (define-syntax forever
   (syntax-rules ()

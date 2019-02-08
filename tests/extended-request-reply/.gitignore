@@ -2,4 +2,4 @@
 client
 worker
 broker
-broker-with-proxy
+broker-buggy
