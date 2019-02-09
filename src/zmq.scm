@@ -78,6 +78,34 @@
  (fprintf out "#,(pollitem ~S ~S)"
   (zmq_pollitem_t-events i) (zmq_pollitem_t-revents i)))
 
+    (define ctor
+     (foreign-lambda* (c-pointer (struct "zmq_pollitem_t")) 
+      ((c-pointer receiver)
+       (c-pointer controller))
+      "zmq_pollitem_t items [] = {
+      { receiver, 0, ZMQ_POLLIN, 0 },
+      { controller, 0, ZMQ_POLLIN, 0 },
+      };
+      C_return(items);"))
+
+    (define-syntax ctor-zmq_pollitem_t
+     (syntax-rules ()
+      ((ctor-zmq_pollitem_t (socket opt) ...)
+       (foreign-lambda* (c-pointer (struct "zmq_pollitem_t")) 
+        ((c-pointer socket) ...)
+        (string-append  
+         "zmq_pollitem_t items [] = { "
+         (string-append "{ " (symbol->string (quote socket)) ", 0, " (symbol->string (quote opt)) ", 0 },") ...
+         "};
+         C_return(items);")))))
+        
+
+    (define items-ref 
+     (foreign-lambda* short 
+      (((c-pointer (struct "zmq_pollitem_t")) items)
+       (int i))
+      "C_return(items[i].revents & ZMQ_POLLIN);"))
+
  ; types.
  ;(define ty_zmq_msg_t (struct "zmq_msg_t"))
 )

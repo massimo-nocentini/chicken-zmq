@@ -1,9 +1,11 @@
 
 (import scheme
  (chicken base)
+ (chicken memory)
  (chicken process-context)
  (chicken random))
 (import srfi-1)
+(import (chicken bitwise))
 (import zmq zhelpers zsugar)
 
     (define (start-worker name)
@@ -14,11 +16,14 @@
       (✓₀ (zmq_connect sender "tcp://localhost:5558"))
       (✓₀ (zmq_connect controller "tcp://localhost:5559"))
       (forever (break)
-       (zmq-poll
-        (receiver (let ((workload (s_recv receiver)))
-                   (print `(Worker ,name will be busy for ,workload msec))
-                   (s_sleep (string->number workload))
-                   (s_send sender "")))
-        (controller (break))))))
+       (let ((items (ctor receiver controller)))
+        (zmq_poll items 2 -1)
+        (when  (equal? ZMQ_POLLIN  (bitwise-and (items-ref items 0) ZMQ_POLLIN))
+         (let ((workload (s_recv receiver)))
+          (print `(Worker ,name will be busy for ,workload msec))
+          (s_sleep (string->number workload))
+          (s_send sender "")))
+        (when (equal? ZMQ_POLLIN (bitwise-and (items-ref items 1) ZMQ_POLLIN))
+         (break))))))
 
 (start-worker (car (command-line-arguments)))

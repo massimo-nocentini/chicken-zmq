@@ -13,7 +13,7 @@
 
  (define-syntax zmq-context
   (syntax-rules ()
-   ((zmq-context (ctx ...) body ...) 
+   ((zmq-context (ctx ...) body ...)
     (let ((ctx (zmq_ctx_new)) ...)
      (✓ ctx) ...
      body ...
@@ -46,18 +46,18 @@
       (zmq_close socket))))))
 
     (define-syntax zmq-poll
-     (syntax-rules (→)
-      ((zmq-poll → (item body) ...)
-       (let ((items (list item ...)))
-        (zmq_poll (location items) (length items) -1)
-        (when (equal? ZMQ_POLLIN (bitwise-and 
-                                  (zmq_pollitem_t-revents item) 
-                                  ZMQ_POLLIN)) 
-         (print item)
-         body) ...))
-      ((zmq-poll (socket body ...) ...)
-       (zmq-poll → 
-        ((make-zmq_pollitem_t socket 0 ZMQ_POLLIN 0) (begin body ...)) ... ))))
+     (syntax-rules ()
+      ((zmq-poll 0) (begin))
+      ((zmq-poll n (items opt body) other ...)
+       (begin
+        (when (positive? (bitwise-and (items-ref items n) opt)) body)
+        (zmq-poll (sub1 n) other ...)))
+      ((zmq-poll ((socket opt) body) ...)
+       (let* ((C (ctor-zmq_pollitem_t (socket opt) ...))
+              (items (C socket ...))
+              (n (length (list socket ...))))
+        (zmq_poll items n -1)
+        (zmq-poll n (items opt body) ...)))))
 
     (define-syntax zmq-message
      (syntax-rules ()
@@ -84,11 +84,11 @@
 
     (define-syntax ✗₋₁
      (syntax-rules ()
-      ((✗₋₁ sexp recv) 
+      ((✗₋₁ sexp recv)
        (let ((rc sexp))
         (cond
          ((equal? rc -1) (recv (zmq_errno)))
-         (else (✓₀ rc))))))) 
+         (else (✓₀ rc)))))))
 
  (define-syntax forever
   (syntax-rules ()
