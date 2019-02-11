@@ -1,7 +1,8 @@
 
 (module zmq *
 
- (import scheme (chicken format) (chicken base) (chicken foreign))
+ (import scheme (chicken format) (chicken base) (chicken foreign) )
+ (import-for-syntax (chicken format))
 
  (foreign-declare "#include <zmq.h>")
 
@@ -70,42 +71,31 @@
  (define-foreign-variable ZMQ_SUBSCRIBE_inner int "ZMQ_SUBSCRIBE")
  (define ZMQ_SUBSCRIBE ZMQ_SUBSCRIBE_inner)
 
- (define-record zmq_pollitem_t socket fd events revents)
- ;(define-record zmq_poller_event_t socket fd user_data events)
- (define-record zmq_msg_t _)
-
-(define-record-printer (zmq_pollitem_t i out)
- (fprintf out "#,(pollitem ~S ~S)"
-  (zmq_pollitem_t-events i) (zmq_pollitem_t-revents i)))
-
-    (define ctor
-     (foreign-lambda* (c-pointer (struct "zmq_pollitem_t")) 
-      ((c-pointer receiver)
-       (c-pointer controller))
-      "zmq_pollitem_t items [] = {
-      { receiver, 0, ZMQ_POLLIN, 0 },
-      { controller, 0, ZMQ_POLLIN, 0 },
-      };
+    (define make-zmq_pollitem_t
+     (foreign-lambda* (c-pointer (struct "zmq_pollitem_t"))
+      ((int nbr))
+      "zmq_pollitem_t items [nbr]; 
       C_return(items);"))
 
-    (define-syntax ctor-zmq_pollitem_t
-     (syntax-rules ()
-      ((ctor-zmq_pollitem_t (socket opt) ...)
-       (foreign-lambda* (c-pointer (struct "zmq_pollitem_t")) 
-        ((c-pointer socket) ...)
-        (string-append  
-         "zmq_pollitem_t items [] = { "
-         (string-append "{ " (symbol->string (quote socket)) ", 0, " (symbol->string (quote opt)) ", 0 },") ...
-         "};
-         C_return(items);")))))
-        
+    (define set-zmq_pollitem_t!
+     (foreign-lambda* void
+      (((c-pointer (struct "zmq_pollitem_t")) items)
+       (int i)
+       (c-pointer socket)
+       (short events))
+      "zmq_pollitem_t item = { .socket = socket, .fd = 0, .events = events, .revents = 0};
+      items[i] = item;"))
 
-    (define items-ref 
-     (foreign-lambda* short 
+    (define zmq_pollitem_t-revents
+     (foreign-lambda* short
       (((c-pointer (struct "zmq_pollitem_t")) items)
        (int i))
-      "C_return(items[i].revents & ZMQ_POLLIN);"))
+      "C_return(items[i].revents);"))
 
- ; types.
- ;(define ty_zmq_msg_t (struct "zmq_msg_t"))
+    (define make-zmq_msg_t
+     (foreign-lambda* (c-pointer (struct "zmq_msg_t"))
+      ()
+      "zmq_msg_t msg; 
+      C_return(&msg);"))
+
 )

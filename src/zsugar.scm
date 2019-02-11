@@ -46,26 +46,35 @@
       (zmq_close socket))))))
 
     (define-syntax zmq-poll
-     (syntax-rules ()
-      ((zmq-poll 0) (begin))
-      ((zmq-poll n (items opt body) other ...)
+     (syntax-rules (↑ →)
+      ((zmq-poll ↑ _₀ _₁ ()) (void))
+      ((zmq-poll ↑ n items ((socket events) other ...))
        (begin
-        (when (positive? (bitwise-and (items-ref items n) opt)) body)
-        (zmq-poll (sub1 n) other ...)))
-      ((zmq-poll ((socket opt) body) ...)
-       (let* ((C (ctor-zmq_pollitem_t (socket opt) ...))
-              (items (C socket ...))
-              (n (length (list socket ...))))
-        (zmq_poll items n -1)
-        (zmq-poll n (items opt body) ...)))))
+        (set-zmq_pollitem_t! items n socket events)
+        (zmq-poll ↑ (add1 n) items (other ...))))
+
+      ((zmq-poll → _₀ _₁ ()) (void))
+      ((zmq-poll → n items ((events body) other ...))
+       (begin
+        (when (positive? (bitwise-and (zmq_pollitem_t-revents items n) events))
+         body)
+        (zmq-poll → (add1 n) items (other ...))))
+
+      ((zmq-poll ((socket events) body) ...)
+       (let* ((n (vector-length (vector socket ...)))
+              (items (make-zmq_pollitem_t n)))
+        (assert (pointer? items))
+        (zmq-poll ↑ 0 items ((socket events) ...))
+        (✗₋₁ (zmq_poll items n -1))
+        (zmq-poll → 0 items ((events body) ...))))))
 
     (define-syntax zmq-message
      (syntax-rules ()
       ((zmq-message (msg ...) body ...)
-       (let ((msg (make-zmq_msg_t (make-string 64))) ...)
-        (zmq_msg_init (location msg)) ...
+       (let ((msg (make-zmq_msg_t)) ...)
+        (zmq_msg_init msg) ...
         body ...
-        (zmq_msg_close (location msg)) ...))))
+        (zmq_msg_close msg) ...))))
 
     (define-syntax locations
      (syntax-rules ()
@@ -84,6 +93,7 @@
 
     (define-syntax ✗₋₁
      (syntax-rules ()
+      ((✗₋₁ sexp) (assert (not (negative? sexp))))
       ((✗₋₁ sexp recv)
        (let ((rc sexp))
         (cond

@@ -16,17 +16,15 @@
       (let ((↔ (lambda (recv-socket send-socket finished) 
                 (let ((more (void)))
                  (zmq-message (message)
-                  (zmq_msg_recv #$message recv-socket 0)
-                  (set! more (zmq_msg_more #$message))
-                  (zmq_msg_send #$message send-socket 
+                  (zmq_msg_recv message recv-socket 0)
+                  (set! more (zmq_msg_more message))
+                  (zmq_msg_send message send-socket 
                    (if (positive? more) ZMQ_SNDMORE 0)))
                  (unless (positive? more) (finished))))))
        (forever
         (zmq-poll
-         (frontend (forever (break)
-                    (↔ frontend backend break)))
-         (backend (forever (break)
-                   (↔ backend frontend break))))))))
+         ((frontend ZMQ_POLLIN) (forever (break) (↔ frontend backend break)))
+         ((backend ZMQ_POLLIN) (forever (break) (↔ backend frontend break))))))))
 
  (start-broker) ; entry point
 
