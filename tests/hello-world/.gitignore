@@ -1,7 +1,11 @@
 
+*.out
+*.sh
+
 client
 server
 client-sugar
 server-sugar
 client-ps
 server-ps
+hello-world-system

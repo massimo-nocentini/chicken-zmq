@@ -6,8 +6,13 @@
   (except (chicken foreign) location)
   (chicken syntax)
   (chicken bitwise)
+  (chicken process)
+  (chicken port)
   (chicken process-context)
+  (chicken file posix)
   (chicken memory))
+ (import-syntax (chicken foreign))
+ (import format) ; dedicated `format` module, CLISP style.
  (import srfi-1 srfi-13)
  (import zmq zhelpers)
 
@@ -109,5 +114,53 @@
    ((forever body ...) (forever (_) body ...))))
 
  (define NULL (foreign-value "NULL" c-pointer))
+
+(define-record channel protocol address port)
+
+    (define channel->string/connect
+     (lambda (channel)
+      (format #f "~a://~a:~a" 
+       (channel-protocol channel) 
+       (channel-address channel) 
+       (channel-port channel))))
+
+    (define channel->string/bind
+     (lambda (channel)
+      (format #f "~a://*:~a" 
+       (channel-protocol channel) 
+       (channel-port channel))))
+
+    (define zmq-system
+     (lambda (spec kill-scripter)
+      (let* ((PIDs (list))
+             (watching (list))
+             (fork (lambda (id thunk)
+                    (let* ((filename (string-append id ".out"))
+                           (pid (process-fork 
+                                 (lambda () 
+                                  (let* ((port (open-output-file filename)))
+                                   (with-output-to-port port thunk)
+                                   (close-output-port port))))))
+                     (set! watching (cons filename watching))
+                     (set! PIDs (cons pid PIDs)))))
+             (writer (lambda (kill-script)
+                      (let ((port (open-output-file kill-script)))
+                       (format port "kill -9 ~{~a ~}~%~!" (map number->string PIDs))
+                       (close-output-port port))))
+             (watcher (lambda () (process-execute "tail" (cons "-f" watching)))))
+       (spec fork) ; fork components.
+       (kill-scripter writer) ; write bash script to kill them all, for rescue.
+       (watcher) ; watch the system, finally.
+    )))
+
+    (define zmq-recv 
+     (lambda (socket bytes)
+      (let ((buffer (make-string bytes)))
+       (zmq_recv socket (location buffer) bytes 0)
+       buffer)))
+
+    (define zmq-send 
+     (lambda (socket str)
+      (zmq_send socket (location str) (string-length str) 0)))
 
  )
