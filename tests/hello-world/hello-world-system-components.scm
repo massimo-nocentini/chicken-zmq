@@ -27,7 +27,7 @@
        (flush-output)))
      (iota tasks_nbr)))))
 
-    (define (server bytes)
+    (define (server bytes sleeping)
      (lambda (channel)
       (zmq-socket ((responder ZMQ_REP))
        (✓₀ (zmq_bind responder
@@ -35,7 +35,7 @@
        (forever
         (print "A client said: " (string-trim-both (zmq-recv responder bytes)))
         (flush-output)
-        (sleep 1)
+        (s_sleep sleeping)
         (zmq-send responder "Thanks for your message")))))
     )
 

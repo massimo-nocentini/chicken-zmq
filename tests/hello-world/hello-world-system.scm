@@ -6,8 +6,8 @@
 (import hello-world-system-components)
 
 (let ((channel (make-channel "tcp" "localhost" "5555"))
-      (tasks_nbr 10)
-      (clients 10))
+      (tasks_nbr 100)
+      (clients 100))
 
     #;(zmq-system 
      (lambda (fork)
@@ -20,8 +20,9 @@
 
     (zmq-system 
      (lambda (fork)
-      (fork "server" (lambda () ((server 2048) channel)))
+      (fork "server" (lambda () ((server 2048 100) channel)))
       (fork "client-top" (lambda () ((client tasks_nbr "top -n 2 -l 1") channel)))
+      (fork "client-echo" (lambda () ((client tasks_nbr "echo \"Hello Server!!\"") channel)))
       (fork "client-date" (lambda () ((client tasks_nbr "date") channel))))
      (lambda (scripter) (scripter "kill-all.sh")))
 
