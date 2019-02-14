@@ -3,18 +3,24 @@
 
  (import scheme
   (chicken base)
-  (except (chicken foreign) location)
+  ;(except (chicken foreign) location)
+  (chicken foreign)
   (chicken syntax)
   (chicken bitwise)
   (chicken process)
+  (chicken module)
   (chicken port)
   (chicken process-context)
   (chicken file posix)
   (chicken memory))
- (import-syntax (chicken foreign))
+ ;(import-for-syntax (only (chicken foreign) location))
+ ;(import-syntax-for-syntax (only (chicken foreign) location))
+ ;(reexport (only (chicken foreign) location))
  (import format) ; dedicated `format` module, CLISP style.
  (import srfi-1 srfi-13)
  (import zmq zhelpers)
+
+ (define (zmq-location obj) (location obj))
 
  (define-syntax zmq-context
   (syntax-rules ()
@@ -39,7 +45,7 @@
    ((zmq-socket ctx ((socket (ZMQ_SUB id)) other ...) body ...)
     (zmq-socket ctx ((socket ZMQ_SUB) other ...)
      (begin
-      (✓₀ (zmq_setsockopt socket ZMQ_SUBSCRIBE (location id) (string-length id)))
+      (✓₀ (zmq_setsockopt socket ZMQ_SUBSCRIBE (zmq-location id) (string-length id)))
       body ...)))
 
    ; catch all case for any sockets; btw, it recurs to handle each socket type.
@@ -115,19 +121,24 @@
 
  (define NULL (foreign-value "NULL" c-pointer))
 
+ (define &
+  (foreign-lambda* c-pointer
+   ((c-string obj))
+   "C_return(&obj);"))
+
 (define-record channel protocol address port)
 
     (define channel->string/connect
      (lambda (channel)
-      (format #f "~a://~a:~a" 
-       (channel-protocol channel) 
-       (channel-address channel) 
+      (format #f "~a://~a:~a"
+       (channel-protocol channel)
+       (channel-address channel)
        (channel-port channel))))
 
     (define channel->string/bind
      (lambda (channel)
-      (format #f "~a://*:~a" 
-       (channel-protocol channel) 
+      (format #f "~a://*:~a"
+       (channel-protocol channel)
        (channel-port channel))))
 
     (define zmq-system
@@ -136,8 +147,8 @@
              (watching (list))
              (fork (lambda (id thunk)
                     (let* ((filename (string-append id ".out"))
-                           (pid (process-fork 
-                                 (lambda () 
+                           (pid (process-fork
+                                 (lambda ()
                                   (let* ((port (open-output-file filename)))
                                    (with-output-to-port port thunk)
                                    (close-output-port port))))))
@@ -153,14 +164,14 @@
        (watcher) ; watch the system, finally.
     )))
 
-    (define zmq-recv 
+    (define zmq-recv
      (lambda (socket bytes)
       (let ((buffer (make-string bytes)))
-       (zmq_recv socket (location buffer) bytes 0)
+       (zmq_recv socket (zmq-location buffer) bytes 0)
        buffer)))
 
-    (define zmq-send 
+    (define zmq-send
      (lambda (socket str)
-      (zmq_send socket (location str) (string-length str) 0)))
+      (zmq_send socket (zmq-location str) (string-length str) 0)))
 
  )
