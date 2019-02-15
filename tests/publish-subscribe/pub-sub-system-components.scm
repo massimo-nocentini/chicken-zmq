@@ -15,8 +15,8 @@
    (let ((code (pseudo-random-integer 100000)))
     (string-pad (number->string code) 5 #\0))))
 
- (define (client id measures)
-  (lambda (channel)
+ (define client 
+  (zmq-component pid (id measures) (channel)
    (zmq-context (ctx)
     (zmq-socket ctx ((subscriber (ZMQ_SUB id)))
      (✓₀ (zmq_connect subscriber (channel->string/connect channel)))
@@ -29,8 +29,8 @@
       (print `(average temperature for zipcode ,id was ,average-temp))
       (flush-output))))))
 
-    (define (server)
-     (lambda (channel)
+    (define server
+     (zmq-component pid () (channel)
       (zmq-context (ctx)
        (zmq-socket ctx ((publisher ZMQ_PUB))
         (✓₀ (zmq_bind publisher (channel->string/bind channel)))
@@ -41,9 +41,9 @@
                 (update (format #f "~a ~a ~a" recipient temperature relhumidity)))
           (s_send publisher update)))))))
 
-
-    (define (proxy) ; unused for now
-     (lambda (frontend-channel backend-channel)
+    ; unused for now
+    (define proxy 
+     (zmq-component pid () (frontend-channel backend-channel)
       (zmq-socket ((frontend ZMQ_XSUB)
                    (backend ZMQ_XPUB))
        (✓₀ (zmq_connect frontend (channel->string/connect frontend-channel))) ; "tcp://192.168.55.210:5556"

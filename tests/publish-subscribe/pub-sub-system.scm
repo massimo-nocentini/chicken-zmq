@@ -10,10 +10,10 @@
           (clients 100))
      (zmq-system
       (lambda (fork)
-       (fork "server" (lambda () ((server) channel)))
+       (fork "server" ((server) channel))
        (for-each (lambda (i)
                   (let* ((zipcode (zipcode/random))
                          (client-name (format #f "client-~a" zipcode)))
-                   (fork client-name (lambda () ((client zipcode measures) channel)))))
+                   (fork client-name ((client zipcode measures) channel))))
         (iota clients)))
       (lambda (scripter) (scripter "kill-all.sh"))))
