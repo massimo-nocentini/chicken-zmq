@@ -20,10 +20,10 @@
 
     (zmq-system 
      (lambda (fork)
-      (fork "server" (lambda () ((server 2048 100) channel)))
-      (fork "client-top" (lambda () ((client tasks_nbr "top -n 2 -l 1") channel)))
-      (fork "client-echo" (lambda () ((client tasks_nbr "echo \"Hello Server!!\"") channel)))
-      (fork "client-date" (lambda () ((client tasks_nbr "date") channel))))
+      (fork "server" ((server 2048 100) channel))
+      (fork "client-top" ((client tasks_nbr "top -n 2 -l 1") channel))
+      (fork "client-echo" ((client tasks_nbr "echo \"Hello Server!!\"") channel))
+      (fork "client-date" ((client tasks_nbr "date") channel)))
      (lambda (scripter) (scripter "kill-all.sh")))
 
-    )
+   ) 

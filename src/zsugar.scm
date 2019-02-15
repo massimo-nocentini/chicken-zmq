@@ -3,7 +3,6 @@
 
  (import scheme
   (chicken base)
-  ;(except (chicken foreign) location)
   (chicken foreign)
   (chicken syntax)
   (chicken bitwise)
@@ -11,16 +10,23 @@
   (chicken module)
   (chicken port)
   (chicken process-context)
+  (chicken process-context posix) 
   (chicken file posix)
   (chicken memory))
- ;(import-for-syntax (only (chicken foreign) location))
- ;(import-syntax-for-syntax (only (chicken foreign) location))
- ;(reexport (only (chicken foreign) location))
  (import format) ; dedicated `format` module, CLISP style.
  (import srfi-1 srfi-13)
  (import zmq zhelpers)
 
- (define (zmq-location obj) (location obj))
+ ; some utilities
+ (define-syntax push!
+  (syntax-rules ()
+   ((push! lst a) (set! lst (cons a lst)))))
+
+ ; necessary to avoid clients to import `(chicken foreign)` that causes
+ ; compilation problems and, worse, at runtime.
+ (define zmq-location 
+  (lambda (obj) 
+   (location obj)))
 
  (define-syntax zmq-context
   (syntax-rules ()
@@ -121,10 +127,6 @@
 
  (define NULL (foreign-value "NULL" c-pointer))
 
- (define &
-  (foreign-lambda* c-pointer
-   ((c-string obj))
-   "C_return(&obj);"))
 
 (define-record channel protocol address port)
 
@@ -145,15 +147,17 @@
      (lambda (spec kill-scripter)
       (let* ((PIDs (list))
              (watching (list))
-             (fork (lambda (id thunk)
+             (fork (lambda (id recv)
                     (let* ((filename (string-append id ".out"))
                            (pid (process-fork
                                  (lambda ()
-                                  (let* ((port (open-output-file filename)))
-                                   (with-output-to-port port thunk)
+                                  (let ((port (open-output-file filename)))
+                                   (with-output-to-port port 
+                                    (lambda () 
+                                     (recv current-process-id)))
                                    (close-output-port port))))))
-                     (set! watching (cons filename watching))
-                     (set! PIDs (cons pid PIDs)))))
+                     (push! watching filename)
+                     (push! PIDs pid))))
              (writer (lambda (kill-script)
                       (let ((port (open-output-file kill-script)))
                        (format port "kill -9 ~{~a ~}~%~!" (map number->string PIDs))
@@ -163,6 +167,25 @@
        (kill-scripter writer) ; write bash script to kill them all, for rescue.
        (watcher) ; watch the system, finally.
     )))
+
+    (define-syntax zmq-component
+     (syntax-rules ()
+      ((zmq-component pid (arg ...) (channel ...) body ...)
+       (lambda (arg ...)
+        (lambda (channel ...)
+         (lambda (pid-getter)
+          (let ((pid (pid-getter)))
+           (assert (positive? pid))
+           body ...)))))))
+
+
+    (define zmq-bind
+     (lambda (socket channel)
+      (zmq_bind socket (channel->string/bind channel))))
+
+    (define zmq-connect
+     (lambda (socket channel)
+      (zmq_connect socket (channel->string/connect channel))))
 
     (define zmq-recv
      (lambda (socket bytes)

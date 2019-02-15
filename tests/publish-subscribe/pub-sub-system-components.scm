@@ -43,11 +43,12 @@
 
 
     (define (proxy) ; unused for now
-     (zmq-socket ((frontend ZMQ_XSUB)
-                  (backend ZMQ_XPUB))
-      (✓₀ (zmq_connect frontend "tcp://192.168.55.210:5556"))
-      (✓₀ (zmq_bind backend "tcp://10.1.1.0:8100"))
-      (zmq_proxy frontend backend NULL)))
+     (lambda (frontend-channel backend-channel)
+      (zmq-socket ((frontend ZMQ_XSUB)
+                   (backend ZMQ_XPUB))
+       (✓₀ (zmq_connect frontend (channel->string/connect frontend-channel))) ; "tcp://192.168.55.210:5556"
+       (✓₀ (zmq_bind backend (channel->string/bind backend-channel))) ; "tcp://10.1.1.0:8100"
+       (zmq_proxy frontend backend NULL))))
 
 
 

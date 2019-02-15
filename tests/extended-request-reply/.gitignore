@@ -3,3 +3,5 @@ client
 worker
 broker
 broker-buggy
+ext-req-rep-system
+*.sh
