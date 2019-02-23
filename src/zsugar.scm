@@ -13,11 +13,12 @@
   (chicken eval)
   (chicken io)
   (chicken condition)
+  (chicken process signal)
   (chicken process-context)
   (chicken process-context posix)
   (chicken file posix)
   (chicken memory))
- (import format) ; dedicated `format` module, CLISP style.
+ (import format matchable) ; dedicated `format` module, CLISP style.
  (import srfi-1 srfi-13)
  (import zmq zhelpers)
 
@@ -151,24 +152,26 @@
      (lambda ()
       (let ((PIDs (list))
             (outputs (list)))
-       (let ((PIDs-getter (lambda (f) (map f PIDs)))
+       (let ((PIDs-getter (lambda (#!optional (f identity)) (map f PIDs)))
              (outputs-getter (lambda () (list-copy outputs)))
-             (fork (lambda (id recv)
+             (fork (lambda (id recv #!key (filename-ctor (lambda (id) (string-append id ".out"))) (verbose #t))
                     (let* ((filename (string-append id ".out"))
                            (pid (process-fork
                                  (lambda ()
                                   (with-output-to-file filename 
                                    (lambda () (recv current-process-id)) #:text)))))
+                     (print `(Forked process ,id with PID ,pid))
                      (push! outputs filename)
                      (push! PIDs pid)
                      (values pid filename)))))
         (values fork PIDs-getter outputs-getter)))))
 
     (define write-bash-script 
-     (lambda (filename cmd options args) ; `options` and `args` have to have type [string] both of them.
-      (with-output-to-file filename
-       (lambda ()
-        (format #t "~a ~{~a ~}~%~!" cmd (append options args))))))
+     (lambda (filename cmd-sexp) ; `options` and `args` have to have type [string] both of them.
+      (match-let (((cmd options args) cmd-sexp))
+       (with-output-to-file filename
+        (lambda ()
+         (format #t "~a ~{~a ~}~%~!" cmd (append options args)))))))
     ; the above definition arises from
     ; (write-bash-script "kill-all.sh" "kill" (list "-9") (PIDs-getter number->string))
 
@@ -177,6 +180,16 @@
       (forever
        (recv (s_clock)) 
        (s_sleep period))))
+
+    (define-syntax signals-handler
+     (syntax-rules ()
+      ((signals-handler ((signal handler) ...) body ...)
+       (let ((old-handler (signal-handler signal)) ...
+             (v (call/cc (lambda (k)
+                          (set-signal-handler! signal (lambda (e) (handler k e))) ...
+                          body ...))))
+        (set-signal-handler! signal old-handler) ... ; restoring old handlers for the given signals
+        v))))
 
     (define replace-process-with
      (lambda (cmd options args) ; `options` and `args` have to have type [string] both of them.
@@ -189,16 +202,18 @@
       (let-values (((in-port out-port pid₀) (process sh-cmd)))
        (read-string #f in-port))))
 
+      ;(signals-handler ((signal/int (lambda (k e) 
+      ;                               (k "Gracefully exit from `tail-watcher`."))))
     (define tail-watcher
      (lambda (period args-getter)
-      (lambda ()
-       (let ((handler (lambda (e) 
-                       (print "tail-watcher gracefully interrupted")))
-             (thunk (lambda ()
-                     (periodically period 
-                      (lambda (time) 
-                       (print (exe-cmd&>output (format #f "tail ~{~a ~}~%~!" (args-getter)))))))))
-        (with-exception-handler handler thunk)))))
+      (let ((thunk (lambda () 
+                    (periodically period 
+                     (lambda (time) 
+                      (let ((cmdline (format #f "tail ~{~a ~}" (args-getter))))
+                       (print (exe-cmd&>output cmdline))
+                       (flush-output)))))))
+       (condition-case (thunk)
+        ((user-interrupt) "Gracefully exit from `tail-watcher`.")))))
 
     (define start-repl 
      (lambda (module-name)
