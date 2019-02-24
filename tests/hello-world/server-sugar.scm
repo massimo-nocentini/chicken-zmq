@@ -1,5 +1,3 @@
-
-
  (import scheme
   (chicken base)
   (chicken foreign)
@@ -22,6 +20,3 @@
           (zmq_send responder (location "World") 5 0)))))))
 
  (start-server) ; entry point
-
-
-

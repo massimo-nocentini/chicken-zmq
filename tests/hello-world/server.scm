@@ -1,5 +1,3 @@
-
-
  (import scheme
   (chicken base)
   (chicken foreign)
@@ -24,6 +22,3 @@
         (loop)))))
 
  (start-server) ; entry point
-
-
-

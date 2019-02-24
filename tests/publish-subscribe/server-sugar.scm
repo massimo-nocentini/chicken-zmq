@@ -1,5 +1,3 @@
-
-
  (import scheme
   (chicken base)
   (chicken foreign)
@@ -26,6 +24,3 @@
           (s_send publisher update)))))))
 
  (start-server) ; entry point
-
-
-

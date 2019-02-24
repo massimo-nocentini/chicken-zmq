@@ -1,19 +1,27 @@
+(module wu-spec *
 
+ (import scheme (chicken base) (chicken format))
+ (import srfi-1)
+ (import zsugar)
+ (import pub-sub-system-components)
 
-(import scheme (chicken base) (chicken format))
-(import srfi-1)
-(import zsugar)
-(import pub-sub-system-components)
+ (define chan (make-channel "tcp" "localhost" "5556"))
+ (define measures 100)
+ (define clients 10)
 
-    (let ((channel (make-channel "tcp" "localhost" "5556"))
-          (measures 100)
-          (clients 100))
-     (zmq-system
-      (lambda (fork)
-       (fork "server" ((server) channel))
-       (for-each (lambda (i)
-                  (let* ((zipcode (zipcode/random))
-                         (client-name (format #f "client-~a" zipcode)))
-                   (fork client-name ((client zipcode measures) channel))))
-        (iota clients)))
-      (lambda (scripter) (scripter "kill-all.sh"))))
+ (define-values (fork PIDs-getter outputs-getter) (zmq-system))
+
+ (define start
+  (lambda ()
+   (fork "server" ((server) chan))
+   (for-each (lambda (i)
+              (let* ((zipcode (zipcode/random))
+                     (client-name (format #f "client-~a" zipcode)))
+               (fork client-name ((client zipcode measures) chan))))
+    (iota clients))
+   (write-bash-script "kill-all.sh" 
+    `("kill" ("-9") ,(PIDs-getter number->string))))))
+
+ (import scheme (chicken base) zsugar)
+
+ (start-repl 'wu-spec) 

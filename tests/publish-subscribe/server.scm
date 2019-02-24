@@ -1,5 +1,3 @@
-
-
  (import scheme
   (chicken base)
   (chicken foreign)
@@ -29,6 +27,3 @@
        (zmq_ctx_destroy context))))
 
  (start-server) ; entry point
-
-
-

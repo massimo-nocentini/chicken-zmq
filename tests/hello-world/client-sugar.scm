@@ -1,5 +1,3 @@
-
-
  (import scheme
   (chicken base)
   (chicken foreign)
@@ -25,4 +23,3 @@
          (iota 10))))))
 
     (start-client) ; entry point
-

@@ -1,0 +1,8 @@
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+article.out
+*.pdf
+_minted-article/

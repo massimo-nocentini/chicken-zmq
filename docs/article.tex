@@ -1,0 +1,121 @@
+
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{inputenc}
+\usepackage{euler}
+\usepackage[T1]{fontenc}
+\usepackage{libertine}
+\usepackage{lipsum}
+\usepackage{fancyvrb}
+\usepackage{url}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{acronym}
+\usepackage{hyperref}
+\usepackage{tabu}
+\usepackage{rotating}
+\usepackage{mathdots}
+\usepackage{minted}
+\usepackage{units}
+\usepackage{float}
+\usepackage{bbold}
+\usepackage[sort&compress,square,comma,authoryear]{natbib}
+
+\fvset{fontsize=\small}
+\setmonofont[Scale=0.8]{Menlo}
+\usemintedstyle{xcode}
+\hypersetup{colorlinks}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\mycontent}[1]{\textcolor{gray}{#1}}
+\newcommand{\zmqfigure}[2]{%
+\begin{figure}[H]
+\centering
+\includegraphics{figures/#1}
+\caption{#2}
+\end{figure}}
+
+\author{Massimo Nocentini}
+\title{ØMQ - The Guide, revisited.}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ZeroMQ (also known as ØMQ, 0MQ, or zmq) looks like an embeddable networking
+library but acts like a concurrency framework. It gives you sockets that carry
+atomic messages across various transports like in-process, inter-process, TCP,
+and multicast. You can connect sockets N-to-N with patterns like fan-out,
+pub-sub, task distribution, and request-reply. It's fast enough to be the
+fabric for clustered products. Its asynchronous I/O model gives you scalable
+multicore applications, built as asynchronous message-processing tasks. It has
+a score of language APIs and runs on most operating systems. ZeroMQ is from
+iMatix\footnote{\url{http://www.imatix.com/}} and is LGPLv3 open source.
+
+\mycontent{Our contribution to the official guide \citep{Hintjens:guide} consists in
+providing an incomplete set of bindings for Chicken scheme by a minimal and
+straightforward translation.}
+\end{abstract}
+
+\section*{How It Began}
+
+We took a normal TCP socket, injected it with a mix of radioactive isotopes
+stolen from a secret Soviet atomic research project, bombarded it with 1950-era
+cosmic rays, and put it into the hands of a drug-addled comic book author with
+a badly-disguised fetish for bulging muscles clad in spandex. Yes, ZeroMQ
+sockets are the world-saving superheroes of the networking world.
+\begin{figure}[H]
+\centering
+\includegraphics{figures/fig1.png}
+\caption{A terrible accident…}
+\end{figure}
+
+\section*{The Zen of Zero}
+
+The Ø in ZeroMQ is all about tradeoffs. On the one hand this strange name
+lowers ZeroMQ's visibility on Google and Twitter. On the other hand it annoys
+the heck out of some Danish folk who write us things like "ØMG røtfl", and "Ø
+is not a funny looking zero!" and "Rødgrød med fløde!", which is apparently an
+insult that means "may your neighbours be the direct descendants of Grendel!"
+Seems like a fair trade.
+
+Originally the zero in ZeroMQ was meant as "zero broker" and (as close to)
+"zero latency" (as possible). Since then, it has come to encompass different
+goals: zero administration, zero cost, zero waste. More generally, "zero"
+refers to the culture of minimalism that permeates the project. We add power by
+removing complexity rather than by exposing new
+functionality.
+
+\tableofcontents
+
+\input{basics.tex}
+
+\section{Reliable Request-Reply Patterns}
+\label{sec:Reliable:Request:Reply:Patterns}
+
+\section{Appendix}
+
+\subsection{\texttt{zmq.scm}}
+\inputminted[baselinestretch=0.8,stripnl=false]{scheme}{../src/zmq.scm}
+
+\subsection{\texttt{zhelpers.scm}}
+\label{sec:zhelpers:scm}
+\inputminted[baselinestretch=0.8,stripnl=false]{scheme}{../src/zhelpers.scm}
+
+\subsection{\texttt{zsugar.scm}}
+\inputminted[baselinestretch=0.8,stripnl=false]{scheme}{../src/zsugar.scm}
+
+
+\bibliographystyle{plainnat}
+\bibliography{biblio}
+\end{document}

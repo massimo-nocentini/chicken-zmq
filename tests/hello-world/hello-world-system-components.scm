@@ -1,5 +1,3 @@
-
-
 (module hello-world-system-components *
 
  (import scheme
@@ -34,8 +32,4 @@
         (print "A client said: " (string-trim-both (zmq-recv responder bytes)))
         (flush-output)
         (s_sleep sleeping)
-        (zmq-send responder "Thanks for your message")))))
-    )
-
-
-
+        (zmq-send responder "Thanks for your message"))))))

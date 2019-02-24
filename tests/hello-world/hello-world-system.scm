@@ -1,6 +1,3 @@
-
-
-
 (module hello-world-spec *
 
  (import scheme (chicken base) (chicken format) (chicken process))
@@ -31,5 +28,3 @@
 
  ; start a repl that takes up and running the entire system.
  (start-repl 'hello-world-spec) 
-
-

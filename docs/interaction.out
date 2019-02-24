@@ -1,0 +1,89 @@
+
+==> client-date.out <==
+task 0 sends the captured output of cmd `date` to the server and receives "Thanks for your message" back.
+task 1 sends the captured output of cmd `date` to the server and receives "Thanks for your message" back.
+
+==> client-echo.out <==
+task 0 sends the captured output of cmd `echo "Hello Server!!"` to the server and receives "Thanks for your message" back.
+task 1 sends the captured output of cmd `echo "Hello Server!!"` to the server and receives "Thanks for your message" back.
+
+==> client-top.out <==
+task 0 sends the captured output of cmd `top -n 2 -l 1` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+SharedLibs: 232M resident, 65M data, 28M linkedit.
+MemRegions: 91461 total, 2481M resident, 101M private, 706M shared.
+PhysMem: 7524M used (2300M wired), 8858M unused.
+VM: 1715G vsize, 1115M framework vsize, 7611637(0) swapins, 7938014(0) swapouts.
+Networks: packets: 2458733/2139M in, 2198990/484M out.
+Disks: 1770077/58G read, 1722029/56G written.
+
+PID    COMMAND          %CPU TIME     #TH #WQ #PORTS MEM  PURG CMPRS PGRP  PPID  STATE    BOOSTS %CPU_ME %CPU_OTHRS UID FAULTS COW   MSGSENT MSGRECV SYSBSD  SYSMACH CSW     PAGEINS IDLEW POWER INSTRS CYCLES USER #MREGS RPRVT VPRVT VSIZE KPRVT KSHRD
+93240  Google Chrome He 0.0  00:20.99 16  1   123+   18M+ 0B   19M+  47243 47243 sleeping *0[6+] 0.00000 0.00000    501 68414+ 1767+ 72153+  36703+  296227+ 405177+ 204733+ 28+     24355 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A  
+92623  Google Chrome He 0.0  00:23.32 16  1   122+   18M+ 0B   18M+  47243 47243 sleeping *0[7+] 0.00000 0.00000    501 65121+ 1767+ 85151+  43311+  334414+ 483011+ 221945+ 40+     27827 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A
+A client said: Hello Server!!
+
+==> client-top.out <==
+task 1 sends the captured output of cmd `top -n 2 -l 1` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Sat Feb 23 10:25:48 CET 2019
+
+==> client-echo.out <==
+task 2 sends the captured output of cmd `echo "Hello Server!!"` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Processes: 386 total, 2 running, 384 sleeping, 1898 threads 
+2019/02/23 10:25:49
+Load Avg: 1.46, 1.59, 1.61 
+CPU usage: 3.27% user, 9.34% sys, 87.38% idle 
+SharedLibs: 232M resident, 65M data, 28M linkedit.
+MemRegions: 91490 total, 2482M resident, 101M private, 706M shared.
+PhysMem: 7525M used (2300M wired), 8858M unused.
+VM: 1719G vsize, 1115M framework vsize, 7611637(0) swapins, 7938014(0) swapouts.
+Networks: packets: 2458745/2139M in, 2199003/484M out.
+Disks: 1770077/58G read, 1722029/56G written.
+
+PID    COMMAND          %CPU TIME     #TH #WQ #PORTS MEM  PURG CMPRS PGRP  PPID  STATE    BOOSTS %CPU_ME %CPU_OTHRS UID FAULTS COW   MSGSENT MSGRECV SYSBSD  SYSMACH CSW     PAGEINS IDLEW POWER INSTRS CYCLES USER #MREGS RPRVT VPRVT VSIZE KPRVT KSHRD
+93240  Google Chrome He 0.0  00:20.99 16  1   123+   18M+ 0B   19M+  47243 47243 sleeping *0[6+] 0.00000 0.00000    501 68414+ 1767+ 72153+  36703+  296227+ 405177+ 204733+ 28+     24355 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A  
+92623  Google Chrome He 0.0  00:23.32 16  1   122+   18M+ 0B   18M+  47243 47243 sleeping *0[7+] 0.00000 0.00000    501 65121+ 1767+ 85151+  43311+  334414+ 483011+ 221945+ 40+     27827 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A
+
+==> client-date.out <==
+task 2 sends the captured output of cmd `date` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Hello Server!!
+
+==> client-top.out <==
+task 2 sends the captured output of cmd `top -n 2 -l 1` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Sat Feb 23 10:25:49 CET 2019
+
+==> client-echo.out <==
+task 3 sends the captured output of cmd `echo "Hello Server!!"` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Processes: 386 total, 2 running, 384 sleeping, 1879 threads 
+2019/02/23 10:25:50
+Load Avg: 1.46, 1.59, 1.61 
+CPU usage: 3.82% user, 10.4% sys, 86.12% idle 
+SharedLibs: 232M resident, 65M data, 28M linkedit.
+MemRegions: 91452 total, 2482M resident, 101M private, 706M shared.
+PhysMem: 7525M used (2300M wired), 8857M unused.
+VM: 1719G vsize, 1115M framework vsize, 7611637(0) swapins, 7938014(0) swapouts.
+Networks: packets: 2458757/2139M in, 2199016/484M out.
+Disks: 1770077/58G read, 1722029/56G written.
+
+PID    COMMAND          %CPU TIME     #TH #WQ #PORTS MEM  PURG CMPRS PGRP  PPID  STATE    BOOSTS %CPU_ME %CPU_OTHRS UID FAULTS COW   MSGSENT MSGRECV SYSBSD  SYSMACH CSW     PAGEINS IDLEW POWER INSTRS CYCLES USER #MREGS RPRVT VPRVT VSIZE KPRVT KSHRD
+93240  Google Chrome He 0.0  00:20.99 16  1   123+   18M+ 0B   19M+  47243 47243 sleeping *0[6+] 0.00000 0.00000    501 68414+ 1767+ 72153+  36703+  296227+ 405178+ 204734+ 28+     24356 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A  
+92623  Google Chrome He 0.0  00:23.32 16  1   122+   18M+ 0B   18M+  47243 47243 sleeping *0[7+] 0.00000 0.00000    501 65121+ 1767+ 85151+  43311+  334414+ 483011+ 221945+ 40+     27827 0.0   0      0      mn   N/A    N/A   N/A   N/A   N/A   N/A
+
+==> client-date.out <==
+task 3 sends the captured output of cmd `date` to the server and receives "Thanks for your message" back.
+
+==> server.out <==
+A client said: Hello Server!!
+
+==> client-top.out <==
+task 3 sends the captured output of cmd `top -n 2 -l 1` to the server and receives "Thanks for your message" back.
