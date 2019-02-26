@@ -19,7 +19,7 @@
   (chicken file posix)
   (chicken memory))
  (import format matchable) ; dedicated `format` module, CLISP style.
- (import srfi-1 srfi-13)
+ (import srfi-1 srfi-13 srfi-69)
  (import zmq zhelpers)
 
  ; some utilities
@@ -41,31 +41,45 @@
      body ...
      (zmq_ctx_destroy ctx) ...))))
 
- (define-syntax zmq-socket
-  (syntax-rules (ZMQ_SUB)
+ (define-syntax typed-boxing 
+  (syntax-rules ()
+   ((typed-boxing ty) (foreign-lambda* scheme-object ((ty v)) "C_return(C_fix(v));"))))
 
-   ; implicit context when only one of it is required.
-   ((zmq-socket (socket ...) body ...)
-    (zmq-context (ctx)
-     (zmq-socket ctx (socket ...) body ...)))
+ (define-syntax &
+  (syntax-rules ()
+   ((& ty) (foreign-lambda* (c-pointer ty) ((ty v)) "C_return(&v);"))))
 
-   ; base case, no more bindings to handle, just put the `body` in.
-   ((zmq-socket ctx () body ...) (begin body ...))
+ (define-syntax sizeof
+  (syntax-rules ()
+   ((sizeof ty) (foreign-lambda* size_t ((ty v)) "C_return(sizeof v);"))))
+ 
+ (define socket-options
+  (let ((H₀ (make-hash-table)))
+   (hash-table-set! H₀ ZMQ_SUBSCRIBE (cons zmq-location string-length))
+   (hash-table-set! H₀ ZMQ_XPUB_VERBOSE (cons (& int) (sizeof int)))
+   H₀))
 
-   ; special case for `SUB` socket, it enforces to `SUBSCRIBE` an `id`.
-   ((zmq-socket ctx ((socket (ZMQ_SUB id)) other ...) body ...)
-    (zmq-socket ctx ((socket ZMQ_SUB) other ...)
-     (begin
-      (✓₀ (zmq_setsockopt socket ZMQ_SUBSCRIBE (zmq-location id) (string-length id)))
-      body ...)))
+ (define-syntax zmq-setsockopt
+  (syntax-rules ()
+   ((zmq-setsockopt socket (opt val) ...)
+    (let-values (((V T) (car+cdr (hash-table-ref socket-options opt))) ...)
+     (begin 
+      (✓₀ (zmq_setsockopt socket opt (V val) (T val))) ...)))))
 
-   ; catch all case for any sockets; btw, it recurs to handle each socket type.
-   ((zmq-socket ctx ((socket type) other ...) body ...)
-    (let ((socket (zmq_socket ctx type)))
-     (✓ socket)
-     (zmq-socket ctx (other ...)
-      body ...
-      (zmq_close socket))))))
+    (define-syntax zmq-socket
+     (syntax-rules ()
+
+      ; implicit context when only one of it is required.
+      ((zmq-socket (socket-spec ...) body ...)
+       (zmq-context (ctx)
+        (zmq-socket ctx (socket-spec ...) body ...)))
+
+      ((zmq-socket ctx ((socket socket-type option ...) ...) body ...)
+       (let ((socket (zmq_socket ctx socket-type)) ...)
+        (✓ socket) ...
+        (zmq-setsockopt socket option ...) ...
+        body ...
+        (zmq_close socket) ...))))
 
     (define-syntax zmq-poll
      (syntax-rules (↑ →)

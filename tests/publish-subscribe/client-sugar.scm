@@ -10,7 +10,7 @@
      (lambda (filter)
       (display "Collecting updates from weather server\n")
       (zmq-context (ctx)
-       (zmq-socket ctx ((subscriber (ZMQ_SUB filter)))
+       (zmq-socket ctx ((subscriber ZMQ_SUB (ZMQ_SUBSCRIBE filter)))
         (✓₀ (zmq_connect subscriber "tcp://localhost:5556"))
         (let* ((L (lambda (i)
                    (let ((str (s_recv subscriber)))

@@ -61,7 +61,7 @@
  (define-foreign-variable ZMQ_POLLIN_inner int "ZMQ_POLLIN")
  (define ZMQ_POLLIN ZMQ_POLLIN_inner)
 
- ; Send/recv options.                                                        */
+ ; Send/recv options.
  (define-foreign-variable ZMQ_DONTWAIT_inner int "ZMQ_DONTWAIT")
  (define-foreign-variable ZMQ_SNDMORE_inner int "ZMQ_SNDMORE")
  (define ZMQ_DONTWAIT ZMQ_DONTWAIT_inner)
@@ -69,12 +69,14 @@
 
  ; Socket options.
  (define-foreign-variable ZMQ_SUBSCRIBE_inner int "ZMQ_SUBSCRIBE")
+ (define-foreign-variable ZMQ_XPUB_VERBOSE_inner int "ZMQ_XPUB_VERBOSE")
  (define ZMQ_SUBSCRIBE ZMQ_SUBSCRIBE_inner)
+ (define ZMQ_XPUB_VERBOSE ZMQ_XPUB_VERBOSE_inner)
 
     (define make-zmq_pollitem_t
      (foreign-lambda* (c-pointer (struct "zmq_pollitem_t"))
       ((int nbr))
-      "zmq_pollitem_t items [nbr]; 
+      "zmq_pollitem_t items [nbr];
       C_return(items);"))
 
     (define set-zmq_pollitem_t!
@@ -95,7 +97,7 @@
     (define make-zmq_msg_t
      (foreign-lambda* (c-pointer (struct "zmq_msg_t"))
       ()
-      "zmq_msg_t msg; 
+      "zmq_msg_t msg;
       C_return(&msg);"))
 
 )

@@ -9,5 +9,8 @@ hello-world-client-server-test:
 	csc -s pub-sub-system-components.scm -J
 	csc -s pub-sub-system-components.import.scm -J
 	csc pub-sub-system.scm
+	csc -s xpub-xsub-components.scm -J
+	csc -s xpub-xsub-components.import.scm -J
+	csc xpub-xsub-system.scm
 
 
