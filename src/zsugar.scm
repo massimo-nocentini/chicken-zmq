@@ -168,8 +168,8 @@
             (outputs (list)))
        (let ((PIDs-getter (lambda (#!optional (f identity)) (map f PIDs)))
              (outputs-getter (lambda () (list-copy outputs)))
-             (fork (lambda (id recv #!key (filename-ctor (lambda (id) (string-append id ".out"))) (verbose #t))
-                    (let* ((filename (string-append id ".out"))
+             (fork (lambda (id recv #!key (filename-ctor (lambda (id) (string-append id ".txt"))) (verbose #t))
+                    (let* ((filename (filename-ctor id))
                            (pid (process-fork
                                  (lambda ()
                                   (with-output-to-file filename 
